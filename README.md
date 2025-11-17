@@ -1,5 +1,10 @@
 # Advancing Spacecraft Microbial Monitoring through Absolute Quantification and Shotgun Metagenomic Diversity Profiling
 
+
+**Note:** This repository is undergoing active maintenance as of 2025-11-17.  
+A full, stable version will be available before December.
+
+
 ## Overview
 This repository contains the R scripts, processed data, and reproducible workflows associated with the manuscript:
 
