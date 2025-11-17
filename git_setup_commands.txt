@@ -1,0 +1,22 @@
+cd "C:/Users/JayKa/OneDrive/Advancing_Spacecraft_Microbial_Monitoring"
+git init
+echo "# Ignore output and large files
+PPR/output_plot/
+PPR/output_data/
+JPL/output_plot/
+JPL/output_data/
+*.pdf
+*.png
+*.pptx
+*.svg
+*.rds
+*.csv
+*.xlsx
+.Rhistory
+.RData
+.Rproj.user/" > .gitignore
+git remote add origin https://github.com/JayKahsen/Advancing_Spacecraft_Microbial_Monitoring.git
+git add .
+git commit -m "Initial clean commit"
+git branch -M main
+git push --set-upstream origin main
