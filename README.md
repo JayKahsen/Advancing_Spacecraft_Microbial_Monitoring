@@ -2,7 +2,7 @@
 
 
 **Note:** This repository is undergoing active maintenance as of 2025-11-17.  
-A full, stable version will be available before December.
+A full, stable version will be available before 2026.
 
 
 ## Overview
