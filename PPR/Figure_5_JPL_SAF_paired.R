@@ -201,12 +201,110 @@ df_tests=df_tests3 %>%
   
 ################################################################################
 ################################################################################
+# wilcoxin signed rank
+################################################################################
+library(dplyr)
+library(tidyr)
+
+sig_stars <- function(p) {
+  case_when(
+    p <= 0.001 ~ "***",
+    p <= 0.01  ~ "**",
+    p <= 0.05  ~ "*",
+    TRUE       ~ "ns"
+  )
+}
+
+
+unique(df_plot1$sample_name)
+df_plot1=df_plot1 %>% 
+  mutate(old_sample_name=sample_name) %>% 
+  select(old_sample_name,sample_name,everything()) %>%
+  mutate(sample_name = gsub("SAF[c|m]", "SAF", old_sample_name)) %>% 
+  select(-old_sample_name)
+
+
+df_wilcoxin <- df_plot1 %>%
+  group_by(method) %>%        # <-- facet by METHOD now
+  do({
+    df_facet <- .
+    
+    df_wide <- df_facet %>%
+      select(sample_name, sampling_device, value) %>%
+      pivot_wider(names_from = sampling_device, values_from = value)
+    
+    # must have exactly 2 sampling devices
+    if (ncol(df_wide) != 3) {
+      return(tibble(
+        method = unique(df_facet$method),
+        device1 = NA_character_,
+        device2 = NA_character_,
+        group1_values = list(NULL),
+        group2_values = list(NULL),
+        group1_concat = NA_character_,
+        group2_concat = NA_character_,
+        p.value = NA_real_
+      ))
+    }
+    
+    device_cols <- colnames(df_wide)[2:3]
+    
+    v1 <- df_wide[[device_cols[1]]]   # device 1 values
+    v2 <- df_wide[[device_cols[2]]]   # device 2 values
+    
+    wtest <- wilcox.test(
+      v1, v2,
+      paired = TRUE,
+      exact = FALSE
+    )
+    
+    tibble(
+      method = unique(df_facet$method),
+      device1 = device_cols[1],
+      device2 = device_cols[2],
+      group1_values = list(v1),
+      group2_values = list(v2),
+      group1_concat = paste(v1, collapse = ", "),
+      group2_concat = paste(v2, collapse = ", "),
+      p.value = wtest$p.value
+    )
+  }) %>%
+  ungroup() %>%
+  mutate(
+    wilcox_val = p.value,
+    wilcox_sig = sig_stars(wilcox_val)
+  )
+
+df_tests <- df_tests %>%
+  left_join(df_wilcoxin %>% 
+              select(method, wilcox_val, wilcox_sig),
+            by = "method")
+
+
+pos_dodge <- position_dodge(width = 0.6)
 ################################################################################
 library(ggplot2)
 library(ggsignif)
 
 p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) +
-  geom_jitter(width = 0.2, size = point_size, alpha = 0.8, shape = 21) +
+  geom_line(
+    aes(
+      x = sampling_device,
+      y = value,
+      group = sample_name,
+      color = NULL
+    ),
+    position = pos_dodge,          # <-- same dodge
+    linewidth = 0.6,
+    alpha = 0.2
+  ) +
+  geom_point(
+    position = pos_dodge,
+    size = point_size,
+    alpha = 0.8,
+    shape = 21,
+    aes(group = sample_name)       # <-- key for dodging
+  ) +
   geom_segment(
     data = df_segments,
     aes(x = x, xend = xend, y = y, yend = yend),
@@ -221,7 +319,7 @@ p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = adj.significance
+      label = wilcox_sig
     ),
     inherit.aes = FALSE,
     size = 4,vjust=-.5
@@ -231,7 +329,7 @@ p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = scales::scientific(adj.p.value)
+      label = scales::scientific(wilcox_val)
     ),
     inherit.aes = FALSE,
     size = 4,vjust=1.5
@@ -333,11 +431,108 @@ df_tests=df_tests3 %>%
   mutate(adj.significance=welch_log_sig) %>% 
   mutate(adj.p.value=welch_log_val) 
 ################################################################################
+# wilcoxin signed rank
+################################################################################
+library(dplyr)
+library(tidyr)
+
+sig_stars <- function(p) {
+  case_when(
+    p <= 0.001 ~ "***",
+    p <= 0.01  ~ "**",
+    p <= 0.05  ~ "*",
+    TRUE       ~ "ns"
+  )
+}
+
+df_plot2=df_plot2 %>% 
+  mutate(old_sample_name=sample_name) %>% 
+  select(old_sample_name,sample_name,everything()) %>%
+  mutate(sample_name = gsub("SAF[p|s]", "SAF", old_sample_name)) %>% 
+  select(-old_sample_name)
+
+df_wilcoxin <- df_plot2 %>%
+  group_by(method) %>%        # <-- facet by METHOD now
+  do({
+    df_facet <- .
+    
+    df_wide <- df_facet %>%
+      select(sample_name, sampling_device, value) %>%
+      pivot_wider(names_from = sampling_device, values_from = value)
+    
+    # must have exactly 2 sampling devices
+    if (ncol(df_wide) != 3) {
+      return(tibble(
+        method = unique(df_facet$method),
+        device1 = NA_character_,
+        device2 = NA_character_,
+        group1_values = list(NULL),
+        group2_values = list(NULL),
+        group1_concat = NA_character_,
+        group2_concat = NA_character_,
+        p.value = NA_real_
+      ))
+    }
+    
+    device_cols <- colnames(df_wide)[2:3]
+    
+    v1 <- df_wide[[device_cols[1]]]   # device 1 values
+    v2 <- df_wide[[device_cols[2]]]   # device 2 values
+    
+    wtest <- wilcox.test(
+      v1, v2,
+      paired = TRUE,
+      exact = FALSE
+    )
+    
+    tibble(
+      method = unique(df_facet$method),
+      device1 = device_cols[1],
+      device2 = device_cols[2],
+      group1_values = list(v1),
+      group2_values = list(v2),
+      group1_concat = paste(v1, collapse = ", "),
+      group2_concat = paste(v2, collapse = ", "),
+      p.value = wtest$p.value
+    )
+  }) %>%
+  ungroup() %>%
+  mutate(
+    wilcox_val = p.value,
+    wilcox_sig = sig_stars(wilcox_val)
+  )
+
+df_tests <- df_tests %>%
+  left_join(df_wilcoxin %>% 
+              select(method, wilcox_val, wilcox_sig),
+            by = "method")
+
+
+
+pos_dodge <- position_dodge(width = 0.6)
+################################################################################
 library(ggplot2)
 library(ggsignif)
 
 p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) +
-  geom_jitter(width = 0.2, size = point_size, alpha = 0.8, shape = 21) +
+  geom_line(
+    aes(
+      x = sampling_device,
+      y = value,
+      group = sample_name,
+      color = NULL
+    ),
+    position = pos_dodge,          # <-- same dodge
+    linewidth = 0.6,
+    alpha = 0.2
+  ) +
+  geom_point(
+    position = pos_dodge,
+    size = point_size,
+    alpha = 0.8,
+    shape = 21,
+    aes(group = sample_name)       # <-- key for dodging
+  ) +
   geom_segment(
     data = df_segments,
     aes(x = x, xend = xend, y = y, yend = yend),
@@ -352,7 +547,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = adj.significance
+      label = wilcox_sig
     ),
     inherit.aes = FALSE,
     size = 4,vjust=-.5
@@ -362,7 +557,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = scales::scientific(adj.p.value)
+      label = scales::scientific(wilcox_val)
     ),
     inherit.aes = FALSE,
     size = 4,vjust=1.5
@@ -453,10 +648,10 @@ final_plot
 
 
 plot_title=script_title
-ggsave(paste0(output_plot,plot_title,'_PPR_',current_date,'.pdf'),final_plot,width=12,height=8)
-ggsave(paste0(output_plot,plot_title,'A_PPR_',current_date,'.pdf'),plotA,width=6,height=8)
-ggsave(paste0(output_plot,plot_title,'B_PPR_',current_date,'.pdf'),plotC,width=6,height=8)
-saveRDS(plotA, paste0(output_plot, plot_title, 'A_PPR_', current_date, '.rds'))
-saveRDS(plotC, paste0(output_plot, plot_title, 'B_PPR_', current_date, '.rds'))
+ggsave(paste0(output_plot,plot_title,'_Paired_',current_date,'.pdf'),final_plot,width=12,height=8)
+ggsave(paste0(output_plot,plot_title,'A_Paired_',current_date,'.pdf'),plotA,width=6,height=8)
+ggsave(paste0(output_plot,plot_title,'B_Paired_',current_date,'.pdf'),plotC,width=6,height=8)
+saveRDS(plotA, paste0(output_plot, plot_title, 'A_Paired_', current_date, '.rds'))
+saveRDS(plotC, paste0(output_plot, plot_title, 'B_Paired_', current_date, '.rds'))
 
 #write.csv(df,paste0(output_plot,plot_title,'_PPR_',current_date,'.csv'))

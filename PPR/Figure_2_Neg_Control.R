@@ -65,7 +65,7 @@ gPlot <- function(p) {
   print(p)
 }
 
-df_sample_counts=read.csv(paste(output_plot,'df_sample_counts.csv')) %>% 
+df_sample_counts=read.csv(paste0(output_plot,'df_sample_counts.csv')) %>% 
   mutate(experiment=factor(experiment, levels = experiment_order))%>%
   mutate(bar_color=factor(bar_color, levels = rev(bar_color_order)))%>%
   mutate(bar_type_2=factor(bar_type_2, levels = bar_type_2_order))%>%

@@ -508,6 +508,7 @@ for(lp in Loop_Group_order){
    
    saveRDS(counts_log_plot,paste0(output_plot,'Figure-',figure_number,'_counts_log_plot.rds'))
    ggsave(paste0(output_plot,'Figure-',figure_number,'_counts_log_plot.png'),counts_log_plot)
+   message('saved RDS')
       
     stop()
       geom_col(aes(fill = !!sym(y_axis_group)),width=.6,position = dodge_pos,alpha=.7)+

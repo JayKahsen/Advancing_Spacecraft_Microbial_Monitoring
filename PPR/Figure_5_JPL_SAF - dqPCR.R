@@ -2,7 +2,7 @@ source(paste0(dirname(normalizePath(rstudioapi::getSourceEditorContext()$path)),
 ###############################################################################
 # Description Start line 80ish
 ################################################################################
-script_title='Figure_5'
+script_title='Figure_5_dqPCR'
 options(scipen = 999) # don;t use scientific notation
 
 figure_number='5'
@@ -122,11 +122,11 @@ df_plot99=df_plot %>%
 
 results <- summary_brackets(
   df = df_plot99,
-  axis_column = "sampling_device",
+  axis_column = "method",
   #  dodge_column = "extraction_method",
   value_column = "value_non_log10",
-  facet_columns = c('figure','method'),
-  testing_col= "sampling_device",
+  facet_columns = c('figure','sampling_device'),
+  testing_col= "method",
   test_type = NULL,
   adjust_method = "BH",
   # dodge_width = 0.8,
@@ -147,11 +147,11 @@ df_plot1=df_plot %>%
 ################################################################################
 results <- summary_brackets(
   df = df_plot1,
-  axis_column = "sampling_device",
+  axis_column = "method",
   #  dodge_column = "extraction_method",
   value_column = "value_non_log10",
-  facet_columns = 'method',
-  testing_col= "sampling_device",
+  facet_columns = 'sampling_device',
+  testing_col= "method",
   test_type = NULL,
   adjust_method = "BH",
   # dodge_width = 0.8,
@@ -167,11 +167,11 @@ df_tests1    <- results$tests
 ################################################################################
 results <- summary_brackets(
   df = df_plot1,
-  axis_column = "sampling_device",
+  axis_column = "method",
   #  dodge_column = "extraction_method",
   value_column = "value",
-  facet_columns = 'method',
-  testing_col= "sampling_device",
+  facet_columns = 'sampling_device',
+  testing_col= "method",
   test_type = NULL,
   adjust_method = "BH",
   # dodge_width = 0.8,
@@ -186,7 +186,7 @@ df_segments <- results$segments
 df_tests=df_tests1 %>% 
   left_join(df_segments %>% 
               filter(part=='top') %>% 
-              select(method,y)) %>% 
+              select(sampling_device,y)) %>% 
   mutate(label_value=y)
 
 df_tests=df_tests3 %>% 
@@ -194,26 +194,109 @@ df_tests=df_tests3 %>%
   select(-figure) %>% 
   left_join(df_segments %>% 
               filter(part=='top') %>% 
-              select(method,y)) %>% 
+              select(sampling_device,y)) %>% 
   mutate(label_value=y) %>% 
   mutate(adj.significance=mann_log_sig) %>% 
   mutate(adj.p.value=mann_log_val) 
   
 ################################################################################
+# wilcoxin signed rank
 ################################################################################
+library(dplyr)
+library(tidyr)
+
+sig_stars <- function(p) {
+  case_when(
+    p <= 0.001 ~ "***",
+    p <= 0.01  ~ "**",
+    p <= 0.05  ~ "*",
+    TRUE       ~ "ns"
+  )
+}
+
+df_wilcoxin <- df_plot1 %>%
+  group_by(sampling_device) %>%  
+  do({
+    df_facet <- .
+    
+    df_wide <- df_facet %>%
+      select(sample_name, method, value) %>%
+      pivot_wider(names_from = method, values_from = value)
+    
+    # Skip facet if not exactly 2 methods
+    if (ncol(df_wide) != 3) {
+      return(tibble(
+        sampling_device = unique(df_facet$sampling_device),
+        method1 = NA_character_,
+        method2 = NA_character_,
+        group1_values = list(NULL),
+        group2_values = list(NULL),
+        group1_concat = NA_character_,
+        group2_concat = NA_character_,
+        p.value = NA_real_
+      ))
+    }
+    
+    method_cols <- colnames(df_wide)[2:3]
+    
+    v1 <- df_wide[[method_cols[1]]]   # group1 vector
+    v2 <- df_wide[[method_cols[2]]]   # group2 vector
+    
+    wtest <- wilcox.test(
+      v1, v2,
+      paired = TRUE,
+      exact = FALSE
+    )
+    
+    tibble(
+      sampling_device = unique(df_facet$sampling_device),
+      method1 = method_cols[1],
+      method2 = method_cols[2],
+      group1_values = list(v1),
+      group2_values = list(v2),
+      group1_concat = paste(v1, collapse = ", "),
+      group2_concat = paste(v2, collapse = ", "),
+      p.value = wtest$p.value
+    )
+  }) %>%
+  ungroup() %>% 
+  mutate(wilcox_val=p.value,
+         wilcox_sig=sig_stars(wilcox_val))
+
+df_tests=df_tests %>% 
+  left_join(df_wilcoxin %>% select(sampling_device,wilcox_val,wilcox_sig))
+
+pos_dodge <- position_dodge(width = 0.6)
 ################################################################################
 library(ggplot2)
 library(ggsignif)
 
-p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) +
-  geom_jitter(width = 0.2, size = point_size, alpha = 0.8, shape = 21) +
+p=ggplot(df_plot1, aes(x = method, y = value, fill = method)) +
+  geom_line(
+    aes(
+      x = method,
+      y = value,
+      group = sample_name,
+      color = NULL
+    ),
+    position = pos_dodge,          # <-- same dodge
+    linewidth = 0.6,
+    alpha = 0.2
+  ) +
+  geom_point(
+    position = pos_dodge,
+    size = point_size,
+    alpha = 0.8,
+    shape = 21,
+    aes(group = sample_name)       # <-- key for dodging
+  ) +
   geom_segment(
     data = df_segments,
     aes(x = x, xend = xend, y = y, yend = yend),
     # linewidth = 0.8,
     inherit.aes = FALSE
   ) +
-  facet_grid(method~.,scale='free_x',
+  facet_grid(sampling_device~.,scale='free_x',
              labeller = labeller(.cols = palette_label, .rows = palette_label),
   )+
   geom_text(
@@ -221,7 +304,7 @@ p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = adj.significance
+      label = wilcox_sig
     ),
     inherit.aes = FALSE,
     size = 4,vjust=-.5
@@ -231,7 +314,7 @@ p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = scales::scientific(adj.p.value)
+      label = scales::scientific(wilcox_val)
     ),
     inherit.aes = FALSE,
     size = 4,vjust=1.5
@@ -239,7 +322,7 @@ p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) 
   geom_errorbar(
     data = df_summary,
     aes(
-      x = sampling_device,
+      x = method,
       ymin = mean_minus_sd,
       ymax = mean_plus_sd,
     ),
@@ -248,7 +331,7 @@ p=ggplot(df_plot1, aes(x = sampling_device, y = value, fill = sampling_device)) 
   geom_errorbar(  # Mean segment
     data = df_summary,
     aes(
-      x = sampling_device,
+      x = method,
       ymin = mean_value,
       ymax = mean_value,
     ),
@@ -271,6 +354,7 @@ plotA=gPlot(p)
 plotA
 
 
+
 ################################################################################
 plot_title='SALSA1'
 ################################################################################
@@ -281,11 +365,11 @@ df_plot2=df_plot %>%
 ################################################################################
 results <- summary_brackets(
   df = df_plot2,
-  axis_column = "sampling_device",
+  axis_column = "method",
   #  dodge_column = "extraction_method",
   value_column = "value_non_log10",
-  facet_columns = 'method',
-  testing_col= "sampling_device",
+  facet_columns = 'sampling_device',
+  testing_col= "method",
   test_type = NULL,
   adjust_method = "BH",
   # dodge_width = 0.8,
@@ -301,11 +385,11 @@ df_tests1    <- results$tests
 ################################################################################
 results <- summary_brackets(
   df = df_plot2,
-  axis_column = "sampling_device",
+  axis_column = "method",
   #  dodge_column = "extraction_method",
   value_column = "value",
-  facet_columns = 'method',
-  testing_col= "sampling_device",
+  facet_columns = 'sampling_device',
+  testing_col= "method",
   test_type = NULL,
   adjust_method = "BH",
   # dodge_width = 0.8,
@@ -320,7 +404,7 @@ df_segments <- results$segments
 df_tests=df_tests1 %>% 
   left_join(df_segments %>% 
               filter(part=='top') %>% 
-              select(method,y)) %>% 
+              select(sampling_device,y)) %>% 
   mutate(label_value=y)
 
 df_tests=df_tests3 %>% 
@@ -328,23 +412,100 @@ df_tests=df_tests3 %>%
   select(-figure) %>% 
   left_join(df_segments %>% 
               filter(part=='top') %>% 
-              select(method,y)) %>% 
+              select(sampling_device,y)) %>% 
   mutate(label_value=y)  %>% 
   mutate(adj.significance=welch_log_sig) %>% 
   mutate(adj.p.value=welch_log_val) 
 ################################################################################
+df_wilcoxin <- df_plot2 %>%
+  group_by(sampling_device) %>%  
+  do({
+    df_facet <- .
+    
+    df_wide <- df_facet %>%
+      select(sample_name, method, value) %>%
+      pivot_wider(names_from = method, values_from = value)
+    
+    # Skip facet if not exactly 2 methods
+    if (ncol(df_wide) != 3) {
+      return(tibble(
+        sampling_device = unique(df_facet$sampling_device),
+        method1 = NA_character_,
+        method2 = NA_character_,
+        group1_values = list(NULL),
+        group2_values = list(NULL),
+        group1_concat = NA_character_,
+        group2_concat = NA_character_,
+        p.value = NA_real_
+      ))
+    }
+    
+    method_cols <- colnames(df_wide)[2:3]
+    
+    v1 <- df_wide[[method_cols[1]]]   # group1 vector
+    v2 <- df_wide[[method_cols[2]]]   # group2 vector
+    
+    wtest <- wilcox.test(
+      v1, v2,
+      paired = TRUE,
+      exact = FALSE
+    )
+    
+    tibble(
+      sampling_device = unique(df_facet$sampling_device),
+      method1 = method_cols[1],
+      method2 = method_cols[2],
+      group1_values = list(v1),
+      group2_values = list(v2),
+      group1_concat = paste(v1, collapse = ", "),
+      group2_concat = paste(v2, collapse = ", "),
+      p.value = wtest$p.value
+    )
+  }) %>%
+  ungroup() %>% 
+  mutate(wilcox_val=p.value,
+         wilcox_sig=sig_stars(wilcox_val))
+
+df_tests=df_tests %>% 
+  left_join(df_wilcoxin %>% select(sampling_device,wilcox_val,wilcox_sig))
+
+pos_dodge <- position_dodge(width = 0.6)
+
+################################################################################
+
+
 library(ggplot2)
 library(ggsignif)
 
-p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) +
-  geom_jitter(width = 0.2, size = point_size, alpha = 0.8, shape = 21) +
+p=ggplot(df_plot2, aes(x = method, y = value, fill = method)) +
+  
+  geom_line(
+    aes(
+      x = method,
+      y = value,
+      group = sample_name,
+      color = NULL
+    ),
+    position = pos_dodge,          # <-- same dodge
+    linewidth = 0.6,
+    alpha = 0.2
+  ) +
+  geom_point(
+    position = pos_dodge,
+    size = point_size,
+    alpha = 0.8,
+    shape = 21,
+    aes(group = sample_name)       # <-- key for dodging
+  ) +
+  
+
   geom_segment(
     data = df_segments,
     aes(x = x, xend = xend, y = y, yend = yend),
     # linewidth = 0.8,
     inherit.aes = FALSE
   ) +
-  facet_grid(method~.,scale='free_x',
+  facet_grid(sampling_device~.,scale='free_x',
              labeller = labeller(.cols = palette_label, .rows = palette_label),
   )+
   geom_text(
@@ -352,7 +513,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = adj.significance
+      label = wilcox_sig
     ),
     inherit.aes = FALSE,
     size = 4,vjust=-.5
@@ -362,7 +523,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
     aes(
       x = label_position,
       y = label_value ,
-      label = scales::scientific(adj.p.value)
+      label = scales::scientific(wilcox_val)
     ),
     inherit.aes = FALSE,
     size = 4,vjust=1.5
@@ -370,7 +531,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
   geom_errorbar(
     data = df_summary,
     aes(
-      x = sampling_device,
+      x = method,
       ymin = mean_minus_sd,
       ymax = mean_plus_sd,
     ),
@@ -379,7 +540,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
   geom_errorbar(  # Mean segment
     data = df_summary,
     aes(
-      x = sampling_device,
+      x = method,
       ymin = mean_value,
       ymax = mean_value,
     ),
@@ -400,7 +561,7 @@ p=ggplot(df_plot2, aes(x = sampling_device, y = value, fill = sampling_device)) 
     <span style="color:white">B) </span>(1000 cm<sup>2</sup>)',
     y = "log10(16S rRNA gene copies) / 1000 cm<sup>2</sup>",
     x = ''
-  ) 
+  )  
 
 p
 
@@ -415,7 +576,7 @@ plot_title='SALSA2'
 plotA
 
 # =plotA+  
-#   stat_count(aes(x = sampling_device,
+#   stat_count(aes(x = method,
 #                  label = after_stat(paste0("n = ", count))
 #   ),
 #   inherit.aes = FALSE,
@@ -428,7 +589,7 @@ plotA
 plotC
 
 # =plotC+  
-#   stat_count(aes(x = sampling_device,
+#   stat_count(aes(x = method,
 #                  label = after_stat(paste0("n = ", count))
 #   ),
 #   inherit.aes = FALSE,
@@ -453,10 +614,10 @@ final_plot
 
 
 plot_title=script_title
-ggsave(paste0(output_plot,plot_title,'_PPR_',current_date,'.pdf'),final_plot,width=12,height=8)
-ggsave(paste0(output_plot,plot_title,'A_PPR_',current_date,'.pdf'),plotA,width=6,height=8)
-ggsave(paste0(output_plot,plot_title,'B_PPR_',current_date,'.pdf'),plotC,width=6,height=8)
-saveRDS(plotA, paste0(output_plot, plot_title, 'A_PPR_', current_date, '.rds'))
-saveRDS(plotC, paste0(output_plot, plot_title, 'B_PPR_', current_date, '.rds'))
+ggsave(paste0(output_plot,plot_title,'_dqPCR_',current_date,'.pdf'),final_plot,width=12,height=8)
+ggsave(paste0(output_plot,plot_title,'A_dqPCR_',current_date,'.pdf'),plotA,width=6,height=8)
+ggsave(paste0(output_plot,plot_title,'B_dqPCR_',current_date,'.pdf'),plotC,width=6,height=8)
+saveRDS(plotA, paste0(output_plot, plot_title, 'A_dqPCR_', current_date, '.rds'))
+saveRDS(plotC, paste0(output_plot, plot_title, 'B_dqPCR_', current_date, '.rds'))
 
 #write.csv(df,paste0(output_plot,plot_title,'_PPR_',current_date,'.csv'))

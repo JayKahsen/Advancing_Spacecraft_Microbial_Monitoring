@@ -112,42 +112,19 @@ if(making_raw_matrix=='yes'){qPrint(making_raw_matrix)
       file2=(paste0('data_tables/original/PPR_XT_2/Project_1790_PPR_XT_2_Output.',tolower(taxa_levs),'.allfilter.abund.tsv'))
       file1=(paste0('data_tables/original/Merged_',taxa_levs,'_raw_abund.csv'))
     }
-   #  df_matrix_XT<- read.delim(file,check.names = FALSE,row.names = 1) %>% 
-   #    t() %>% as.data.frame() %>% 
-   #    rownames_to_column(var = 'sample_id_XT') %>%
-   #    left_join(meta)%>%
-   #    select(sample_name,everything()) %>% 
-   # filter(!is.na(sample_name)) %>% 
-   #    imPlode_sample_name()
-   #  sum(is.na(df_matrix_XT))
-   #  
-   #  df_matrix_XT_2<- read.delim(file2,check.names = FALSE,row.names = 1)%>% 
-   #    t() %>% as.data.frame() %>% 
-   #    rownames_to_column(var = 'sample_id_XT_2') %>%
-   #    left_join(meta) %>%
-   #    select(sample_name,everything()) %>% 
-   #    filter(!is.na(sample_name)) %>% 
-   #    imPlode_sample_name()
-   #  sum(is.na(df_matrix_XT_2))
-   #  
-   #  df_matrix2 <- bind_rows(df_matrix_XT, df_matrix_XT_2) %>% 
-   #    replace(is.na(.), 0)
+
     
-     df_matrix2 <- read.csv(file1,row.names = 1,check.names = FALSE)%>% 
+     df_matrix3 <- read.csv(file1,row.names = 1,check.names = FALSE)%>% 
        column_to_rownames(var='ID') %>% 
        t() %>% as.data.frame() %>% 
        rownames_to_column(var='sample_id_PPR') %>%
        left_join(meta) %>% 
+       select(sample_id_PPR,sample_name,everything())
+       
+       df_matrix2=df_matrix3 %>% 
        filter(!is.na(sample_name)) %>%
        imPlode_sample_name()
        
-       # df_matrix2$sample_name[duplicated(df_matrix2$sample_name)]
-       # 
-       # df_matrix2$sample_id_PPR[duplicated(df_matrix2$sample_id_PPR)]
-       # df_matrix2$sample_id_PPR[duplicated(df_matrix2$sample_id_PPR)]
-       # 
-       # which(duplicated(names(df_matrix2)))
-              
 df_matrix2$sample_name
     # fix sample_name 
     sum(is.na(df_matrix2))

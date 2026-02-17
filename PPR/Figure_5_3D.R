@@ -111,7 +111,7 @@ for(plot_set in plot_set_order){qPrint(plot_set)
     scores <- as.data.frame(scores(nmds_model, display = "sites")[, 1:k_value])
     colnames(scores) <- c(paste0("x_", model_name), paste0("y_", model_name))
     if(k_value>2){
-    colnames(scores) <- c(paste0("x_", model_name), paste0("y_", model_name), paste0("z_", model_name))
+      colnames(scores) <- c(paste0("x_", model_name), paste0("y_", model_name), paste0("z_", model_name))
     }
     scores$sample_name <- rownames(scores)
     return(scores)
@@ -271,7 +271,7 @@ for(plot_set in plot_set_order){qPrint(plot_set)
                              # init = init,
                              distance = "bray",
                              wascores = TRUE)
-    
+        
         nmds_bray_scores <- extract_nmds_scores(nmds_bray, "nmds_bray")
         
         nmds_bray_species_scores <- extract_nmds_species_scores(nmds_bray, "nmds_bray")
@@ -1041,7 +1041,7 @@ for(plot_set in plot_set_order){qPrint(plot_set)
           geom_vline(xintercept = 0, linetype = "dashed") +
           geom_point(aes(fill = !!sym(color_group),shape = !!sym(shape_group),size = !!sym(shape_group))
                      ,size=5
-                )+  
+          )+  
           facet_wrap2(formula(paste("~", plot_group)),strip.position = "right",
                       strip = strip_themed(
                         background_x = backgrounds_x, 
@@ -1074,7 +1074,7 @@ for(plot_set in plot_set_order){qPrint(plot_set)
         if (shape_group %in% colnames(df) && length(unique(df[[shape_group]])) > 1) {
           p <- p + stat_ellipse(aes(group = !!sym(shape_group), color = !!sym(shape_group)), linewidth = 2, level = 0.95)
         }
-
+        
         if (color_group %in% colnames(df) && length(unique(df[[color_group]])) > 1) {
           p <- p + stat_ellipse(aes(group = !!sym(color_group), color = !!sym(color_group)), linewidth = 1, level = 0.95)
         }
@@ -1155,9 +1155,149 @@ df_plot3D=df_plot %>%
   rename(z=z_nmds_bray)
 names(df_plot3D)
 stop()
-write.csv(df_plot3D,paste0(output_data,'df3.csv'),row.names = FALSE)
 ################################################################################
 
+###############################################################################
+#----------------------------  PYTHON 3D NMDS SCRIPT  -----------------------#
+###############################################################################
+
+library(reticulate)
+library(dplyr)
+
+py_config()
+#---------------------------------------------------------------------------
+# SECTION 1 — INSTALL PYTHON PACKAGES (replace only this banner if needed)
+#---------------------------------------------------------------------------
+#Run ONCE. Comment out after installation.
+# py_install(c("numpy", "pandas", "scipy", "pyvista"))
+# py_install("pyvista[plotting]")
+
+#---------------------------------------------------------------------------
+# SECTION 2 — PREPARE df3 FROM df_plot (matches your current NMDS pipeline)
+#---------------------------------------------------------------------------
+df3 <- df_plot %>%
+  select(x, y, z_nmds_bray, sample_name, sampling_device, stress) %>%
+  rename(z = z_nmds_bray)
+
+# send to python
+df3_py <- r_to_py(df3)
+
+
+#---------------------------------------------------------------------------
+# SECTION 3 — PYTHON BLOCK (3D plot with ellipsoids)
+# Replace this whole block if changing rendering backend.
+#---------------------------------------------------------------------------
+py_run_string("
+import numpy as np
+import pandas as pd
+import pyvista as pv
+from scipy.stats import chi2
+
+# ===============================
+# LOAD DATA FROM R
+# ===============================
+df3 = df3_py.copy()
+
+coords = df3[['x','y','z']].to_numpy()
+groups = df3['sampling_device'].astype(str)
+devices = groups.unique()
+
+stress_value = float(df3['stress'].unique()[0])
+
+# custom colors (matches your R factor levels)
+colors = {
+    'cotton': '#5DA5DA',
+    'macrofoam': '#B276B2',
+    'Polyester Wipe': '#60BD68',
+    'SALSA': '#F17CB0'
+}
+
+# ===============================
+# ELLIPSOID GENERATOR
+# ===============================
+def ellipsoid_mesh(mu, Sigma, level=0.95, n=50):
+    vals, vecs = np.linalg.eigh(Sigma)
+    k = chi2.ppf(level, df=3)
+    axes = np.sqrt(vals * k)
+
+    u = np.linspace(0, 2*np.pi, n)
+    v = np.linspace(0, np.pi, n)
+    uu, vv = np.meshgrid(u, v)
+
+    xs = axes[0] * np.cos(uu) * np.sin(vv)
+    ys = axes[1] * np.sin(uu) * np.sin(vv)
+    zs = axes[2] * np.cos(vv)
+
+    sphere = np.stack([xs, ys, zs], axis=-1)
+    E = sphere @ vecs.T + mu
+
+    surf = pv.StructuredGrid()
+    surf.points = E.reshape(-1, 3)
+    surf.dimensions = xs.shape
+    return surf
+
+# ===============================
+# 3D WINDOW
+# ===============================
+plotter = pv.Plotter()
+plotter.add_axes()
+plotter.background_color = 'white'
+
+# ===============================
+# ADD POINTS
+# ===============================
+for dev in devices:
+    mask = (groups == dev)
+    pts = coords[mask]
+
+    plotter.add_points(
+        pts,
+        color=colors.get(dev, 'gray'),
+        point_size=14,
+        render_points_as_spheres=True,
+        name=f'pts_{dev}'
+    )
+
+# ===============================
+# ADD 95% ELLIPSOIDS
+# ===============================
+for dev in devices:
+    pts = coords[groups == dev]
+    if pts.shape[0] < 5:
+        # too few points for covariance
+        continue
+
+    Sigma = np.cov(pts, rowvar=False)
+    mu = pts.mean(axis=0)
+
+    ell = ellipsoid_mesh(mu, Sigma, level=0.95, n=60)
+    plotter.add_mesh(
+        ell,
+        opacity=0.25,
+        color=colors.get(dev, 'gray'),
+        name=f'ell_{dev}',
+        smooth_shading=True
+    )
+
+# ===============================
+# ADD TITLE
+# ===============================
+plotter.add_text(
+    f'3D NMDS (Stress = {stress_value:.4f})',
+    font_size=12,
+    color='black'
+)
+
+# ===============================
+# SHOW
+# ===============================
+plotter.show()
+")
+
+
+###############################################################################
+#---------------------------- END PYTHON 3D SCRIPT ---------------------------#
+###############################################################################
 
 ################################################################################
 
