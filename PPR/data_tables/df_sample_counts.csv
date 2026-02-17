@@ -1,0 +1,70 @@
+"sample_name","bar_color","bar_type_2","experiment","sample_reads"
+"6_NCw_Ma_1","Water","Mastermix","PPR",154
+"6_NCw_Qi_1","Water","Mastermix","PPR",1534
+"7_NCec_Ma_1","Cotton","Metal Wet","PPR",912606
+"7_NCem_Ma_1","Macrofoam","Metal Wet","PPR",404
+"7_NCw_Ma_1","Water","Mastermix","PPR",251336
+"7_NCw_Ma_2","Water","Mastermix","PPR",7084
+"14_NCc_Ma_1","Cotton","Device","PPR",2420
+"14_NCw_Ma_1","Water","Mastermix","PPR",118
+"14_NCc_Qi_1","Cotton","Device","PPR",714992
+"14_NCm_Qi_1","Macrofoam","Device","PPR",894
+"14_NCw_Qi_1","Water","Mastermix","PPR",1922
+"15_NCc_Ma_1","Cotton","Device","PPR",2998
+"15_NCec_Ma_1","Cotton","Metal Wet","PPR",1644
+"15_NCem_Ma_1","Macrofoam","Metal Wet","PPR",2246
+"15_NCw_Ma_1","Water","Mastermix","PPR",270
+"15_NCw_Ma_2","Water","Mastermix","PPR",210
+"17_NCc_Ma_1","Cotton","Device","PPR",2170
+"17_NCec_Ma_1","Cotton","Metal Wet","PPR",444
+"17_NCem_Ma_1","Macrofoam","Metal Wet","PPR",396
+"17_NCm_Ma_1","Macrofoam","Device","PPR",1106
+"17_NCw_1","Water","Mastermix","PPR",306
+"17_NCw_2","Water","Mastermix","PPR",244
+"18_NCc_Ma_1","Cotton","Device","PPR",1822
+"18_NCw_Ma_1","Water","Mastermix","PPR",312
+"18_NCem_Ma_1","Macrofoam","Metal Wet","PPR",790
+"18_NCw_Ma_2","Water","Mastermix","PPR",104
+"5_NCw_1","Water","Mastermix","PPR",708
+"5_NCw_2","Water","Mastermix","PPR",368
+"12_NCw_100_Ma_1","Water","Mastermix","PPR",329122
+"12_NCw_100_Ma_2","Water","Mastermix","PPR",1862
+"12_NCw_100_Qi_1","Water","Mastermix","PPR",90
+"12_NCw_100_Qi_2","Water","Mastermix","PPR",312
+"12_NCw_400_Ma_1","Water","Mastermix","PPR",350
+"12_NCw_400_Ma_2","Water","Mastermix","PPR",216
+"12_NCw_400_Qi_1","Water","Mastermix","PPR",9248
+"12_NCw_400_Qi_2","Water","Mastermix","PPR",254
+"13_Asc_NCw_Qi_1","Cotton","Device","PPR",428
+"13_Asm_NCw_Qi_1","Macrofoam","Device","PPR",4552
+"16_Asm_NCw_Ma_1","Macrofoam","Device","PPR",3116
+"16_Asm_NCw_Qi_1","Macrofoam","Device","PPR",6288
+"3_NTC_R_1","NTC","Mastermix","PPR",62
+"2_Msc_DCCA_R_1","Cotton","Metal Dry","PPR",92
+"2_Msc_DCCA_R_2","Cotton","Metal Dry","PPR",102
+"2_Msc_DCCA_R_3","Cotton","Metal Dry","PPR",782
+"2_Msc_DCCA_R_4","Cotton","Metal Dry","PPR",1542
+"3_Msc_DCCA_R_1","Cotton","Metal Dry","PPR",348
+"3_Msc_DCCA_R_2","Cotton","Metal Dry","PPR",130
+"3_Msc_DCCA_R_3","Cotton","Metal Dry","PPR",92
+"3_Msc_DCCA_R_4","Cotton","Metal Dry","PPR",78
+"2_Msc_DCMA_R_1","Macrofoam","Metal Dry","PPR",52
+"2_Msc_DCMA_R_2","Macrofoam","Metal Dry","PPR",76
+"2_Msc_DCMA_R_3","Macrofoam","Metal Dry","PPR",162
+"2_Msc_DCMA_R_4","Macrofoam","Metal Dry","PPR",88
+"3_Msc_DCMA_R_1","Macrofoam","Metal Dry","PPR",54
+"3_Msc_DCMA_R_2","Macrofoam","Metal Dry","PPR",56
+"3_Msc_DCMA_R_3","Macrofoam","Metal Dry","PPR",7746
+"3_Msc_DCMA_R_4","Macrofoam","Metal Dry","PPR",56
+"2_Asc_NCw_R_1","Cotton","Environmental","PPR",134
+"2_Asc_NCm_R_1","Cotton","Metal Dry","PPR",244
+"2_Asm_NCm_R_1","Macrofoam","Metal Dry","PPR",38
+"2_Msc_NR_R_1","Cotton","Environmental","PPR",234
+"2_Msc_NR_R_2","Cotton","Environmental","PPR",154
+"3_Msc_NR_R_2","Cotton","Environmental","PPR",258
+"2_Msm_NR_R_1","Macrofoam","Environmental","PPR",40
+"2_Mt_NR_R_NC_1","Water","Mastermix","PPR",414
+"2_Mt_NR_R_NC_2","Water","Mastermix","PPR",634
+"3_Mt_NR_R_NC_1","Water","Mastermix","PPR",76
+"3_Mt_NR_R_NC_2","Water","Mastermix","PPR",56
+"2_NTC_R_1","NTC","Mastermix","PPR",208
