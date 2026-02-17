@@ -1,0 +1,5 @@
+"taxa_levs","data_sets","taxa_plural","raw_path","file_name","file_path"
+"Phylum","s0","Phyla","data_tables/raw_matrix/raw_matrix_Phylum.csv","data_tables/raw_matrix/raw_matrix_Phylum.csv","data_tables/raw_matrix/raw_matrix_Phylum.csv"
+"Family","s0","Families","data_tables/raw_matrix/raw_matrix_Family.csv","data_tables/raw_matrix/raw_matrix_Family.csv","data_tables/raw_matrix/raw_matrix_Family.csv"
+"Genus","s0","Genera","data_tables/raw_matrix/raw_matrix_Genus.csv","data_tables/raw_matrix/raw_matrix_Genus.csv","data_tables/raw_matrix/raw_matrix_Genus.csv"
+"Species","s0","Species","data_tables/raw_matrix/raw_matrix_Species.csv","data_tables/raw_matrix/raw_matrix_Species.csv","data_tables/raw_matrix/raw_matrix_Species.csv"
