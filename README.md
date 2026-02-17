@@ -1,137 +1,81 @@
 # Advancing Spacecraft Microbial Monitoring through Absolute Quantification and Shotgun Metagenomic Diversity Profiling
 
-
-**Note:** This repository is undergoing active maintenance as of 2025-11-17.  
-A full, stable version will be available before 2026.
-
+**Note:** This repository is undergoing active maintenance.
 
 ## Overview
-This repository contains the R scripts, processed data, and reproducible workflows associated with the manuscript:
-
-**"Advancing Spacecraft Microbial Monitoring through Absolute Quantification and Shotgun Metagenomic Diversity Profiling"**  
-**Author:** Jeremy Kahsen (Jeremy_Kahsen@Rush.edu)  
-**Manuscript status:** *[Under review / In preparation / Published]*  
-**Affiliations:** *[Insert institution(s)]*
-
-This project integrates:
-
-- Digital PCR (dPCR) absolute quantification  
-- Shotgun metagenomic diversity profiling  
-- Amplicon-based microbiome analyses  
-- Low-biomass contamination-aware workflows  
-- Multi-environment spacecraft-associated samples (PPR, ILMAH, SAF, etc.)
-
-The repository provides the complete computational workflow used to generate manuscript figures and tables.
+This repository contains R scripts, processed data, and reproducible workflows used to generate manuscript figures and tables for spacecraft microbial monitoring analyses.
 
 ---
 
-## Repository Structure
+## Active Repository Structure
 
-```
-/                                  # Root project directory
-├── helper/                        # Shared helper functions
-│   └── helperJ.R
+```text
+/
+├── PPR/                       # Primary dataset workflows and data
+│   ├── _globalStuff.R
+│   ├── 2_Feature_Tables_to_Rarefied_merged.R
+│   └── data_tables/
+│       ├── original/
+│       └── raw_matrix/
 │
-├── PPR/                           # Dataset 1 (Planetary Protection Research)
-│   ├── data_tables/               # Raw data for PPR
-│   ├── output_data/               # Generated intermediate data
-│   ├── output_plot/               # Publication-ready figures & tables
-│   ├── scripts/                   # One R script per figure/table
-│   └── _globalStuff.R             # PPR-specific global settings
+├── JPL/                       # Secondary dataset workflows (renamed from Clipper)
+│   ├── _globalStuff.R
+│   ├── 2_Feature_Tables_to_Rarefied.R
+│   └── data_tables/
+│       ├── original/
+│       └── raw_matrix/
 │
-├── JPL/                           # Dataset 2 (JPL dataset)
-│   ├── data_tables/               # Raw data for JPL
-│   ├── output_data/               # Generated intermediate data
-│   ├── output_plot/               # Publication-ready figures & tables
-│   ├── scripts/                   # One R script per figure/table
-│   └── _globalStuff.R             # JPL-specific global settings
-│
-├── README.md                      # This file
-└── Advancing_Spacecraft_Microbial_Monitoring.Rproj
+├── helperJ.R                  # Shared helper functions
+├── _globalStuff.R             # Root/global bootstrap script
+├── actual figures/            # Canonical figure outputs to recreate
+└── unneeded/                  # Archived legacy/duplicate/temp files
 ```
 
 ---
 
-## Reproducibility
+## Current Curation Rules
 
-### Requirements
-- **R version:** ≥ 4.3  
-- **Packages:**  
-  `tidyverse`, `ggplot2`, `patchwork`, `vegan`, `compositions`,  
-  `ggtext`, `ggh4x`, `effectsize`, plus those automatically loaded via helper scripts.
-
----
-
-### Load shared helper functions
-
-```r
-source("helper/helperJ.R")
-```
-
-### Load dataset-specific global settings
-
-**For PPR:**
-```r
-source("PPR/_globalStuff.R")
-```
-
-**For JPL:**
-```r
-source("JPL/_globalStuff.R")
-```
-
-### Run figure/table scripts
-
-**Example:**
-```r
-source("PPR/scripts/Figure_5_Microbial_Load.R")
-```
-
-**Or for JPL:**
-```r
-source("JPL/scripts/Figure_3_Shotgun_Diversity.R")
-```
-
-### Outputs are saved automatically to:
-
-```
-PPR/output_data/
-PPR/output_plot/
-
-JPL/output_data/
-JPL/output_plot/
-```
+- Canonical manuscript figures are in `actual figures/`.
+- Active feature-table preprocessing is script-driven from:
+  - `PPR/2_Feature_Tables_to_Rarefied_merged.R`
+  - `JPL/2_Feature_Tables_to_Rarefied.R`
+- Each feature-table script sources its local `_globalStuff.R` (which sets working directory and loads `helperJ.R`).
+- `look_at_counts`, rarefied output, and filtered output steps are intentionally removed from the active preprocessing path.
+- The active preprocessing path now does only:
+  1. create/update `data_tables/matrix_names.csv`
+  2. transform `data_tables/original/Merged_*_raw_abund.csv` into `data_tables/raw_matrix/raw_matrix_*.csv`
+- In `matrix_names.csv`, `file_name` and `file_path` now target the raw-matrix output path.
+- Legacy JPL content and other non-essential files were moved to `unneeded/` for temporary retention.
 
 ---
 
-## Placeholder Sections (Complete during manuscript finalization)
+## Required Input Files (per dataset)
 
-### Study Summary
-*[Insert summary of sampling design, environments, and goals]*
+Only these canonical merged taxonomic files are expected in each active dataset's `data_tables/original/` folder:
 
-### Methods Summary
-*[Insert description of dPCR processing, shotgun workflows, QC steps, and statistical methods]*
+- `Merged_Phylum_raw_abund.csv`
+- `Merged_Family_raw_abund.csv`
+- `Merged_Genus_raw_abund.csv`
+- `Merged_Species_raw_abund.csv`
 
-### Citation (update once published)
-*Kahsen J. et al., Year, Journal, DOI*
+Metadata files (e.g., `meta.csv`) are expected to already exist; metadata regeneration is not part of the active run path.
 
-### Acknowledgments
-*[Insert collaborators, funding, institutional support]*
+---
 
-### License
-*[Insert license: MIT, CC-BY, or institution-specific requirements]*
+## Reproducibility Notes
+
+- R version: >= 4.1 recommended.
+- Core packages are loaded via each dataset `_globalStuff.R`.
+- Run scripts non-interactively from the repository with Linux-style paths.
+
+### Example
+
+```r
+source('PPR/2_Feature_Tables_to_Rarefied_merged.R')
+source('JPL/2_Feature_Tables_to_Rarefied.R')
+```
 
 ---
 
 ## Contact
-For questions or collaboration:
-
-📧 **Jeremy_Kahsen@Rush.edu**
-
----
-
-## Notes
-- The repository is actively maintained.  
-- Each figure/table corresponds to a dedicated script located in the appropriate dataset folder.  
-- Shared helper functions are in `helper/`.  
-- Global settings are dataset-specific and live inside `PPR/` and `JPL/`.
+Jeremy_Kahsen@Rush.edu
