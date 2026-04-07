@@ -1006,7 +1006,11 @@ feature_labels <- function(group = 'feature', df = df_matrix,averaging_group='sa
   df_processed1<-df_processed%>%
     mutate(
       Domain = sapply(taxa, extract_domain),  # Assuming extract_domain() is defined elsewhere
-      feature_label_original = sapply(taxa, generate_new_feature_label),
+      feature_label_original = vapply(
+        taxa,
+        function(x) paste(generate_new_feature_label(x), collapse = ";"),
+        character(1)
+      ),
       feature_label = if_else(feature_label_original == '__', 'unclassified', feature_label_original),
       feature_label = sub("^p__", "", feature_label)  # Clean up 'p__' prefix if needed
     ) %>%
