@@ -15,7 +15,19 @@ options(scipen = 999)
 # load helper file/functions
 # load libraries
 ################################################################################
-wd <-dirname(normalizePath(rstudioapi::getSourceEditorContext()$path))
+get_script_dir <- function() {
+  cmd_args <- commandArgs(trailingOnly = FALSE)
+  file_arg <- grep("^--file=", cmd_args, value = TRUE)
+  if (length(file_arg) > 0) {
+    return(dirname(normalizePath(sub("^--file=", "", file_arg[1]))))
+  }
+  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    return(dirname(normalizePath(rstudioapi::getSourceEditorContext()$path)))
+  }
+  getwd()
+}
+
+wd <- get_script_dir()
 project_folder <- basename(wd)
 setwd(wd)
 source("helperJ.R")
