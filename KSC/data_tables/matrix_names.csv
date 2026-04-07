@@ -1,0 +1,5 @@
+"taxa_levs","taxa_plural","working_path","file_name","file_path"
+"Family","Families","data_tables/working_matrix/working_matrix_Family.csv","data_tables/working_matrix/working_matrix_Family.csv","data_tables/working_matrix/working_matrix_Family.csv"
+"Genus","Genera","data_tables/working_matrix/working_matrix_Genus.csv","data_tables/working_matrix/working_matrix_Genus.csv","data_tables/working_matrix/working_matrix_Genus.csv"
+"Phylum","Phyla","data_tables/working_matrix/working_matrix_Phylum.csv","data_tables/working_matrix/working_matrix_Phylum.csv","data_tables/working_matrix/working_matrix_Phylum.csv"
+"Species","Species","data_tables/working_matrix/working_matrix_Species.csv","data_tables/working_matrix/working_matrix_Species.csv","data_tables/working_matrix/working_matrix_Species.csv"
