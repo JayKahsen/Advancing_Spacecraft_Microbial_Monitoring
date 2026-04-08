@@ -84,8 +84,7 @@ if (exists("matrix_names")) {
   data_set_order <- data_sets <- unique(matrix_names$data_sets)
 }
 
-output_data <- "output_data/"
-output_plot <- "output_plot/"
+set_output()
 dpi <- 300
 
 treatment_order <- c("No PMA", "PMA")

@@ -32,7 +32,8 @@ Files in each `data_tables/original/` folder are source analysis tables used as 
 ```text
 Advancing_Spacecraft_Microbial_Monitoring/
 |-- helperJ.R
-|-- _globalStuff.R
+|-- .gitignore
+|-- _github_setup_and_update.R
 |
 |-- PPR/
 |   |-- _globalStuff.R
@@ -97,7 +98,8 @@ Advancing_Spacecraft_Microbial_Monitoring/
 | File | Description |
 |------|-------------|
 | `helperJ.R` | Shared helper functions used across repository scripts |
-| `_globalStuff.R` | Root-level setup script used by repository-wide workflows |
+| `.gitignore` | Git ignore rules used to keep generated outputs and local-only files out of the repository |
+| `_github_setup_and_update.R` | Local helper script used during repository setup and update tasks |
 
 ### PPR scripts
 

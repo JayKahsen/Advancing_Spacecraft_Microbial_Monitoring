@@ -53,8 +53,7 @@ message("65 # Shared objects")
 taxa_levels <- c("Phylum", "Family", "Genus", "Species")
 taxa_plural <- c("Phyla", "Families", "Genera", "Species")
 
-output_plot <- "output_plot/"
-create_directory(output_plot)
+set_output()
 
 dpi <- 600
 point_size <- 3.5
